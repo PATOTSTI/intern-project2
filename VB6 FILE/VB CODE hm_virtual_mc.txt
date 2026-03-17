@@ -1,0 +1,169 @@
+Private Sub cmd_hm_virtual_mc_Click()
+
+
+On Error GoTo ErrorHandler
+
+Dim strprev As String
+Dim attachment As String
+Dim emailaddress As String
+Dim emailaddresscc As String
+Dim rsrecipient As ADODB.Recordset
+
+Dim rs As ADODB.Recordset
+Dim query As String
+Dim iFIleNo As Integer
+Dim filepath As String
+Dim strTemp As String
+
+'Dim desPath As String
+
+'desPath = "\\10.1.56.145\Shared"
+'tlfpath definition upon loading reports
+'folderPath = frm_setDate.dirWindows.Path & "\" & Format(prevbusdate, "YYYYMMDD")
+' C:\BSS Repors\YYYYMMDD\
+'tlfpath = folderPath & "\"
+iFIleNo = FreeFile()
+
+Set rsrecipient = New ADODB.Recordset
+Set rs = New ADODB.Recordset
+
+txtBranch.Text = "000"
+
+disable_buttons
+
+strprev = commonprevbusdate
+report_to_gen
+If Dir(tlfpath & "aub" & txtBranch.Text & "hellomoney_virtual_mastercard_" & Format(CDate(prevbusdate), "YYYYMMDD") & ".xls") <> "" Then
+    Exit Sub
+End If
+
+tempmessage = txtMessage.Text
+txtMessage.Text = "Generating HelloMoney Virtual Mastercard Report ..." & vbNewLine & vbNewLine & txtMessage.Text
+
+    
+With CReport
+    .Reset
+    .ReportFileName = App.Path & "\hm_virtual_mc.rpt"
+    Call bssreportgeneratorconn
+    .Connect = "uid=" & strSbssrepUID & ";" & "pwd=" & strSbssrepPWD & ";" & "dsName=bssreportgen;"
+    .Formulas(1) = "repdate = 'for " & repmonth & " " & repday & ", " & repyear & "'"
+    .WindowState = crptMaximized
+    .PrintFileType = crptExcel50
+    .PrintFileName = tlfpath & "aub" & txtBranch.Text & "hellomoney_virtual_mastercard_" & Format(CDate(prevbusdate), "YYYYMMDD") & ".xls"
+    .Destination = crptToFile
+    .Action = 1
+End With
+    delay 1
+    DoEvents
+    enable_buttons
+    txtMessage.Text = "Generating HelloMoney Virtual Mastercard Report ... DONE!" & vbNewLine & vbNewLine & txtMessage.Text
+  
+    
+txtMessage.Text = "Generating HM Virtual Mastercard CSV File..." & vbCrLf & vbCrLf & txtMessage.Text
+
+ADO_Connect
+
+query = "select * from vwd_hm_virtual_mc order by txn_date, txn_time"
+rs.Open (query), conn
+
+filepath = tlfpath & "aub" & txtBranch.Text & "hellomoney_virtual_mastercard_" & Format(CDate(prevbusdate), "YYYYMMDD") & ".csv"
+'header
+strTemp = "acctno,name,mnem_code,credit,debit,txn_time,trmlid,refno,external_refno,remarks1"
+
+Open filepath For Output As #iFIleNo
+    Print #iFIleNo, strTemp
+Close #iFIleNo
+
+While Not (rs.EOF)
+
+    strTemp = ""
+    
+    strTemp = CStr(rs!acctNo) & ","
+    strTemp = strTemp & CStr(Replace(rs!Name, ",", "")) & ","
+    strTemp = strTemp & CStr(rs!mnem_code) & ","
+    strTemp = strTemp & CStr(rs!credit) & ","
+    strTemp = strTemp & CStr(rs!debit) & ","
+    strTemp = strTemp & CStr(rs!txn_time) & ","
+    strTemp = strTemp & CStr(rs!trmlid) & ","
+    strTemp = strTemp & CStr(rs!refno) & ","
+    strTemp = strTemp & CStr(rs!external_refno) & ","
+    If (rs!remarks1 <> Null) Or (rs!remarks1 <> "") Then
+        strTemp = strTemp & rs!remarks1
+    End If
+    
+    Open filepath For Append As #iFIleNo
+        Print #iFIleNo, strTemp
+    Close #iFIleNo
+    
+    rs.MoveNext
+    DoEvents
+    
+Wend
+rs.Close
+ADO_Disconnect
+
+txtMessage.Text = "Generating HM Virtual Mastercard CSV File... DONE!" & vbCrLf & vbCrLf & txtMessage.Text
+
+'FTP to sir Joseph's PC pending credentials
+'FileCopy filepath, desPath
+    
+enable_buttons
+        
+Exit Sub
+        
+ErrorHandler: MsgBox ("Error code " & Err.number & ": " & Err.Description), vbOKOnly, "HelloMoney Virtual Mastercard"
+enable_buttons
+
+
+
+End Sub
+
+Public Sub report_to_gen()
+
+    strprev = Format(commonprevbusdate, "yyyy-mm-dd")
+    repyear2int = Val(repyear)
+    date1 = repmonth & " " & repday & ", " & repyear
+    number = Val(repdatenum)
+    
+    
+    repdatenum2 = Str(number)
+    
+    repmonth2 = Switch(number = 1, "January", number = 2, "February", number _
+                    = 3, "March", number = 4, "April", number = 5, "May", number _
+                    = 6, "June", number = 7, "July", number = 8, "August", number _
+                    = 9, "September", number = 10, "October", number = 11, "November", number = 12, "December")
+    
+    'set month table
+    findterm
+    
+    'set database here
+    ADO_Connect
+    Clear "month"
+    conn.Execute ("insert into month(term) values('" & Str(month) & "')")
+    Clear "branch_to"
+    conn.Execute ("insert into branch_to(branchno) values('" & txtBranch.Text & "')")
+    Clear "prevbusdate"
+    conn.Execute ("insert into prevbusdate(date) values('" & strprev & "')")
+    ADO_Disconnect
+
+
+End Sub
+
+Public Sub Clear(table As String)
+
+On Error GoTo Error_found
+DoEvents
+
+    conn.CommandTimeout = 0
+    conn.Execute "Delete from " & table
+
+    
+    Exit Sub
+    
+Error_found:
+If Err.number <> 0 Then MsgBox Err.Description, vbExclamation, "ERROR"
+
+End Sub
+
+
+

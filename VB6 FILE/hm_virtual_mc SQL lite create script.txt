@@ -1,0 +1,62 @@
+-- CARD HISTORY
+CREATE TABLE cardhistoryfile1_copy (
+    card_hash_id TEXT,
+    acctno TEXT,
+    partner_id INTEGER,
+    mnem_code TEXT,
+    txntype TEXT,
+    txn_desc TEXT,
+    internal_refno TEXT,
+    external_refno TEXT,
+    txn_date TEXT,
+    txn_time TEXT,
+    txn_amt REAL,
+    txn_currency TEXT
+);
+
+
+-- ACCOUNT MASTER
+CREATE TABLE hmacctmstr_copy (
+    acctno TEXT PRIMARY KEY,
+    branchcode INTEGER,
+    clientid TEXT,
+    accttype INTEGER,
+    acctsubtype INTEGER,
+    acctstat INTEGER,
+    partner_id INTEGER,
+    refno TEXT
+);
+
+
+-- CLIENT MASTER
+CREATE TABLE hmclientmstr_copy (
+    clientid TEXT,
+    partner_id INTEGER,
+    lname TEXT,
+    fname TEXT,
+    mname TEXT,
+    fullname TEXT,
+    celno TEXT,
+    PRIMARY KEY (clientid, partner_id)
+);
+
+
+-- HM HISTORY TRANSACTIONS
+CREATE TABLE hmhistoryfile2_copy (
+    partner_id INTEGER,
+    acctno TEXT,
+    txnseqno INTEGER,
+    txncode TEXT,
+    mnem_code TEXT,
+    txntype TEXT,
+    txn_date TEXT,
+    txn_time TEXT,
+    valuedate TEXT,
+    txnamt TEXT,
+    ledger_bal TEXT,
+    avail_bal TEXT,
+    refno TEXT,
+    remarks1 TEXT,
+    remarks2 TEXT
+);
+

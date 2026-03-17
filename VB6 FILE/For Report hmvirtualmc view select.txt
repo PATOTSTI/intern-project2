@@ -1,0 +1,5 @@
+vwd_hm_virtual_mc."acctno", vwd_hm_virtual_mc."Name", vwd_hm_virtual_mc."mnem_code", vwd_hm_virtual_mc."Credit", vwd_hm_virtual_mc."Debit", vwd_hm_virtual_mc."txn_time", vwd_hm_virtual_mc."trmlid", vwd_hm_virtual_mc."refno", vwd_hm_virtual_mc."external_refno", vwd_hm_virtual_mc."remarks1"
+FROM
+"BSSReportGen"."dbo"."vwd_hm_virtual_mc" vwd_hm_virtual_mc
+ORDER BY
+vwd_hm_virtual_mc."txn_time" ASC
