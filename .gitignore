@@ -1,3 +1,6 @@
 /Contents
 /Database/MasterCardReport.db
 /docs
+.gitignore
+/.venv
+
