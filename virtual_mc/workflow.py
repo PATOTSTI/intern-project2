@@ -62,7 +62,7 @@ class VirtualMcReportService:
         try:
             repo.bootstrap_from_sql_files(CREATE_SQL_PATH, INSERT_SQL_PATH)
             repo.prepare_report_parameters(previous_date, self.branch_code)
-            rows = repo.query_report_rows()
+            rows = repo.query_report_rows(previous_date)
 
             export_excel_like(xls_path, rows, previous_date)
             export_csv(csv_path, rows)

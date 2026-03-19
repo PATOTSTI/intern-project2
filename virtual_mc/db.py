@@ -49,15 +49,18 @@ class VirtualMcRepository:
         conn.execute("INSERT INTO prevbusdate(date) VALUES (?)", (prev_date,))
         conn.commit()
 
-    def query_report_rows(self) -> list[dict[str, Any]]:
+    def query_report_rows(self, target_date: date) -> list[dict[str, Any]]:
         conn = self._require_connection()
+        date_str = target_date.strftime("%Y-%m-%d")
         cursor = conn.execute(
             """
             SELECT acctno, Name, mnem_code, Credit, Debit, txn_time, trmlid, refno,
                    external_refno, remarks1
             FROM vwd_hm_virtual_mc
+            WHERE txn_date = ?
             ORDER BY txn_date, txn_time
-            """
+            """,
+            (date_str,),
         )
         return [dict(row) for row in cursor.fetchall()]
 
