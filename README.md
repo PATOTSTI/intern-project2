@@ -65,9 +65,9 @@ For each run, files are created inside a date folder:
 
 Example:
 
-`output/20260313/aub000hellomoney_virtual_mastercard_20260313.csv`
+`output/20260313/_virtual_mastercard_20260313.csv`
 
-`output/20260313/aub000hellomoney_virtual_mastercard_20260313.xls`
+`output/20260313/_virtual_mastercard_20260313.xls`
 
 If the `.xls` file for that date already exists, generation is skipped to avoid duplicates.
 
