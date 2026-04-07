@@ -13,14 +13,13 @@ from .config import (
     REPORT_BASENAME,
     REPORT_PREFIX,
 )
-from .date_utils import previous_business_day
 from .db import VirtualMcRepository
 from .exporters import export_csv, export_excel_like
 
 
 @dataclass
 class ReportResult:
-    previous_business_date: date
+    report_date: date
     row_count: int
     xls_path: Path
     csv_path: Path
@@ -41,16 +40,17 @@ class VirtualMcReportService:
         self.branch_code = branch_code
 
     def run(self, report_date: date | None = None) -> ReportResult:
-        previous_date = previous_business_day(report_date)
-        yyyymmdd = previous_date.strftime("%Y%m%d")
+        target_date = report_date or date.today()
+        yyyymmdd = target_date.strftime("%Y%m%d")
 
+        date_folder = self.output_dir / yyyymmdd
         base_name = f"{REPORT_PREFIX}{self.branch_code}{REPORT_BASENAME}_{yyyymmdd}"
-        xls_path = self.output_dir / f"{base_name}.xls"
-        csv_path = self.output_dir / f"{base_name}.csv"
+        xls_path = date_folder / f"{base_name}.xls"
+        csv_path = date_folder / f"{base_name}.csv"
 
         if xls_path.exists():
             return ReportResult(
-                previous_business_date=previous_date,
+                report_date=target_date,
                 row_count=0,
                 xls_path=xls_path,
                 csv_path=csv_path,
@@ -61,14 +61,14 @@ class VirtualMcReportService:
         repo.connect()
         try:
             repo.bootstrap_from_sql_files(CREATE_SQL_PATH, INSERT_SQL_PATH)
-            repo.prepare_report_parameters(previous_date, self.branch_code)
-            rows = repo.query_report_rows(previous_date)
+            repo.prepare_report_parameters(target_date, self.branch_code)
+            rows = repo.query_report_rows(target_date)
 
-            export_excel_like(xls_path, rows, previous_date)
+            export_excel_like(xls_path, rows, target_date)
             export_csv(csv_path, rows)
 
             return ReportResult(
-                previous_business_date=previous_date,
+                report_date=target_date,
                 row_count=len(rows),
                 xls_path=xls_path,
                 csv_path=csv_path,

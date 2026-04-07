@@ -1,8 +1,11 @@
-/Contents
+/Contents/
+/BSS REPORTS/
+/docs/
+/.venv/
+/venv/
+
 /VB6 FILE/
 /output/
 /Database/MasterCardReport.db
-/docs
 .gitignore
-/.venv
 

@@ -36,17 +36,15 @@ class VirtualMcRepository:
         self.ensure_virtual_view()
         conn.commit()
 
-    def prepare_report_parameters(self, previous_business_date: date, branch_code: str) -> None:
+    def prepare_report_parameters(self, report_date: date, branch_code: str) -> None:
         conn = self._require_connection()
-        month_term = str(previous_business_date.month)
-        prev_date = previous_business_date.strftime("%Y-%m-%d")
+        month_term = str(report_date.month)
 
-        for table_name in ("month", "branch_to", "prevbusdate"):
+        for table_name in ("month", "branch_to"):
             conn.execute(f"DELETE FROM {table_name}")
 
         conn.execute("INSERT INTO month(term) VALUES (?)", (month_term,))
         conn.execute("INSERT INTO branch_to(branchno) VALUES (?)", (branch_code,))
-        conn.execute("INSERT INTO prevbusdate(date) VALUES (?)", (prev_date,))
         conn.commit()
 
     def query_report_rows(self, target_date: date) -> list[dict[str, Any]]:
@@ -68,37 +66,13 @@ class VirtualMcRepository:
         conn = self._require_connection()
         conn.execute("CREATE TABLE IF NOT EXISTS month(term TEXT)")
         conn.execute("CREATE TABLE IF NOT EXISTS branch_to(branchno TEXT)")
-        conn.execute("CREATE TABLE IF NOT EXISTS prevbusdate(date TEXT)")
 
     def ensure_virtual_view(self) -> None:
         conn = self._require_connection()
         conn.execute("DROP VIEW IF EXISTS vwd_hm_virtual_mc")
         conn.execute(
             """
-            CREATE VIEW vwd_hm_virtual_mc AS
-            SELECT
-                a.acctno,
-                TRIM(COALESCE(c.lname, '')) || ', ' || TRIM(COALESCE(c.fname, '')) || ' ' || TRIM(COALESCE(c.mname, '')) AS Name,
-                a.mnem_code,
-                CASE WHEN a.txntype = 'D' THEN CAST(a.txnamt AS REAL) ELSE 0 END AS Credit,
-                CASE WHEN a.txntype = 'C' THEN CAST(a.txnamt AS REAL) ELSE 0 END AS Debit,
-                a.txn_date,
-                a.txn_time,
-                SUBSTR(a.txncode, 1, 4) AS trmlid,
-                a.refno,
-                b.external_refno,
-                a.remarks1
-            FROM hmhistoryfile2_copy AS a
-            JOIN cardhistoryfile1_copy AS b
-              ON a.refno = b.internal_refno
-            JOIN hmacctmstr_copy AS d
-              ON a.acctno = d.acctno
-            JOIN hmclientmstr_copy AS c
-              ON d.clientid = c.clientid
-             AND d.partner_id = c.partner_id
-            WHERE a.mnem_code IN ('EPOS', 'REPOS')
-              AND b.txn_desc = 'OPENLOOP_PRE_AUTH'
-            """
+            
         )
 
     def _run_sql_script(self, script_path: Path) -> None:

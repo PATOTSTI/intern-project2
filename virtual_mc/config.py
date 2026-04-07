@@ -16,12 +16,11 @@ CSV_HEADERS = [
 ]
 
 DEFAULT_BRANCH_CODE = "000"
-DEFAULT_DB_PATH = Path("Database") / "MasterCardReport.db"
-DEFAULT_OUTPUT_DIR = Path("output")
+DEFAULT_DB_PATH = Path("Database") / "TestDB.db"
+DEFAULT_OUTPUT_DIR = Path("BSS REPORTS")
 
 # Keep legacy naming pattern for file compatibility.
 REPORT_PREFIX = "aub"
 REPORT_BASENAME = "hellomoney_virtual_mastercard"
-
 CREATE_SQL_PATH = Path("VB6 FILE") / "hmvirtualmc sqllite create scripts.txt"
 INSERT_SQL_PATH = Path("VB6 FILE") / "hmvirtualmc insert scripts.txt"

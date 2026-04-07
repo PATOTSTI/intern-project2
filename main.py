@@ -56,9 +56,8 @@ def main() -> int:
         print(f"Skipped: existing XLS already present at {result.xls_path}")
         return 0
 
-    print(f"\nReport date entered  : {raw_date}")
-    print(f"Previous business date: {result.previous_business_date}")
-    print(f"Rows exported         : {result.row_count}")
+    print(f"\nReport date : {result.report_date}")
+    print(f"Rows exported: {result.row_count}")
     print(f"XLS : {result.xls_path}")
     print(f"CSV : {result.csv_path}")
     return 0
